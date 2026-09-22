@@ -1,6 +1,6 @@
 FROM node:18-bookworm-slim
 
-# Install latest Chromium, standard fonts, and rendering libraries
+# Install Chromium, fonts, and runtime libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     fonts-ipafont-gothic \
@@ -39,23 +39,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Point Puppeteer to the system-installed Chromium binary
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
     PORT=7860
 
 WORKDIR /app
 
-# Install app dependencies
 COPY package*.json ./
 RUN npm install --omit=dev
 
-# Copy application source
 COPY . .
 
-# Create unprivileged user (UID 1000 required for Hugging Face Spaces)
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
+# The official Node image already provides an unprivileged "node" user (UID 1000).
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 7860
 
