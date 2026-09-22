@@ -1,8 +1,3 @@
-/* ==============================================================================
-   Cloud Web Browser - Modern Dark Theme
-   Optimized for Microsoft Surface 2 (1080p Touch Screen) & Legacy Browsers
-   ============================================================================== */
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -16,177 +11,134 @@ html, body {
   overflow: hidden;
   background-color: #09090b;
   color: #f4f4f5;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
   user-select: none;
   -ms-user-select: none;
 }
 
-/* --- Top Toolbar --- */
 .toolbar {
-  height: 48px;
+  height: 56px;
   background-color: #18181b;
-  border-bottom: 1px solid #27272a;
+  border-bottom: 1px solid #333338;
   display: flex;
   align-items: center;
-  padding: 0 10px;
-  gap: 8px;
+  padding: 0 8px;
   position: relative;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-.nav-group, .control-group {
+.nav-group, .control-group, .nav-form {
   display: flex;
   align-items: center;
-  gap: 6px;
 }
 
-/* Button styles */
+.nav-group { margin-right: 6px; }
+.control-group { margin-left: 6px; }
+.nav-form { flex: 1; min-width: 180px; }
+
 .btn {
-  background-color: #27272a;
+  background-color: #2b2b30;
   color: #f4f4f5;
-  border: 1px solid #3f3f46;
+  border: 1px solid #45454d;
   border-radius: 6px;
-  min-width: 36px;
-  height: 34px;
-  padding: 0 10px;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 11px;
+  margin: 0 2px;
   font-size: 15px;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   outline: none;
-  transition: background 0.15s, border-color 0.15s;
+  touch-action: manipulation;
+  -ms-touch-action: manipulation;
 }
 
 .btn:hover, .btn:active {
-  background-color: #3f3f46;
-  border-color: #52525b;
+  background-color: #414149;
 }
 
-.btn-primary {
-  background-color: #2563eb;
-  border-color: #1d4ed8;
-  color: #ffffff;
-  font-weight: 500;
-}
-
-.btn-primary:hover, .btn-primary:active {
-  background-color: #1d4ed8;
-}
-
-.btn-go {
-  background-color: #2563eb;
-  border-color: #1d4ed8;
-  color: white;
-  font-weight: 600;
-  padding: 0 14px;
-}
-
-.btn-kbd {
-  font-size: 18px;
-}
-
-.btn-close {
-  background-color: #ef4444;
-  border-color: #dc2626;
-  color: white;
+.btn-nav {
+  font-size: 20px;
   font-weight: bold;
 }
 
-/* --- Omnibox / Search & Address Input --- */
-.nav-form {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 200px;
+.btn-primary, .btn-go {
+  background-color: #2563eb;
+  border-color: #1d4ed8;
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-close {
+  background-color: #b91c1c;
+  border-color: #991b1b;
+}
+
+.btn-kbd {
+  min-width: 54px;
+  font-weight: 600;
 }
 
 .url-input {
   flex: 1;
-  height: 34px;
-  background-color: #09090b;
-  border: 1px solid #3f3f46;
+  min-width: 80px;
+  height: 42px;
+  background-color: #0f0f12;
+  border: 1px solid #45454d;
   border-radius: 6px;
-  color: #fafafa;
+  color: #fff;
   padding: 0 12px;
-  font-size: 14px;
+  font-size: 15px;
   outline: none;
-  transition: border-color 0.15s;
+  margin-right: 4px;
+  user-select: text;
+  -ms-user-select: text;
 }
 
-.url-input:focus {
+.url-input:focus, .type-input:focus {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 1px #3b82f6;
 }
 
-/* Quality Select Dropdown */
 .quality-select {
-  height: 34px;
-  background-color: #27272a;
-  border: 1px solid #3f3f46;
+  height: 42px;
+  background-color: #2b2b30;
+  border: 1px solid #45454d;
   border-radius: 6px;
-  color: #f4f4f5;
+  color: #fff;
   padding: 0 6px;
+  margin: 0 2px;
   font-size: 12px;
-  outline: none;
-  cursor: pointer;
 }
 
-/* Connection Status Badge */
 .status-badge {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
+  margin-left: 6px;
+  margin-right: 2px;
   border-radius: 50%;
   border: 2px solid #18181b;
-  transition: background-color 0.3s;
 }
 
-.status-connected {
-  background-color: #10b981;
-  box-shadow: 0 0 6px #10b981;
-}
+.status-connected { background-color: #10b981; }
+.status-connecting { background-color: #f59e0b; }
+.status-disconnected { background-color: #ef4444; }
 
-.status-connecting {
-  background-color: #f59e0b;
-  box-shadow: 0 0 6px #f59e0b;
-}
-
-.status-disconnected {
-  background-color: #ef4444;
-  box-shadow: 0 0 6px #ef4444;
-}
-
-/* --- Loading Indicator Bar --- */
 .loading-bar {
   height: 3px;
-  width: 0%;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa, #93c5fd);
+  width: 0;
+  background-color: #3b82f6;
   position: absolute;
-  top: 48px;
+  top: 56px;
   left: 0;
   z-index: 99;
-  transition: width 0.3s ease, opacity 0.3s ease;
 }
 
-.loading-active {
-  width: 80%;
-  animation: pulse-load 1.5s infinite;
-}
+.loading-active { width: 80%; }
 
-@keyframes pulse-load {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-}
-
-/* --- Viewport Canvas Area --- */
 .viewport-container {
   width: 100%;
-  height: calc(100% - 48px);
+  height: calc(100% - 56px);
   position: relative;
-  background-color: #000000;
+  background-color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -197,53 +149,50 @@ html, body {
   display: block;
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain;
-  cursor: default;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  outline: none;
+  cursor: crosshair;
+  touch-action: none;
+  -ms-touch-action: none;
+  -ms-content-zooming: none;
 }
 
-/* --- Touch Keyboard Helper Drawer --- */
 .keyboard-drawer {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 54px;
+  min-height: 62px;
   background-color: #18181b;
   border-top: 2px solid #3b82f6;
   display: flex;
   align-items: center;
-  padding: 0 12px;
-  gap: 8px;
+  padding: 8px;
   z-index: 200;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .type-input {
   flex: 1;
-  height: 38px;
-  background-color: #09090b;
-  border: 1px solid #3f3f46;
+  min-width: 100px;
+  height: 44px;
+  background-color: #0f0f12;
+  border: 1px solid #45454d;
   border-radius: 6px;
-  color: #ffffff;
+  color: #fff;
   padding: 0 12px;
-  font-size: 15px;
+  margin-right: 4px;
+  font-size: 16px;
   outline: none;
+  user-select: text;
+  -ms-user-select: text;
 }
 
-.type-input:focus {
-  border-color: #3b82f6;
-}
-
-/* --- Connection Status Overlay --- */
 .overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(9, 9, 11, 0.85);
+  background-color: rgba(9, 9, 11, 0.88);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -252,23 +201,23 @@ html, body {
 
 .overlay-card {
   background-color: #18181b;
-  border: 1px solid #27272a;
-  border-radius: 12px;
-  padding: 28px 36px;
+  border: 1px solid #34343a;
+  border-radius: 10px;
+  padding: 26px 30px;
   text-align: center;
+  width: 90%;
   max-width: 440px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
 }
 
-.overlay-card h3 {
-  font-size: 20px;
-  margin-bottom: 12px;
-  color: #fafafa;
-}
+.overlay-card h3 { margin-bottom: 10px; font-size: 20px; }
+.overlay-card p { margin-bottom: 18px; color: #b4b4bc; line-height: 1.4; }
 
-.overlay-card p {
-  font-size: 14px;
-  color: #a1a1aa;
-  margin-bottom: 20px;
-  line-height: 1.5;
+@media (max-width: 760px) {
+  .toolbar { height: 54px; padding: 0 4px; }
+  .viewport-container { height: calc(100% - 54px); }
+  .loading-bar { top: 54px; }
+  .quality-select { display: none; }
+  .btn { min-width: 38px; padding: 0 8px; }
+  .btn-kbd { min-width: 48px; }
+  .url-input { font-size: 14px; padding: 0 8px; }
 }
