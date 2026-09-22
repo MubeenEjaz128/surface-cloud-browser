@@ -9,7 +9,6 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-// Serve static assets from public/
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/health', (req, res) => {
@@ -19,9 +18,7 @@ app.get('/health', (req, res) => {
 let browser = null;
 
 async function getBrowser() {
-  if (browser && browser.isConnected()) {
-    return browser;
-  }
+  if (browser && browser.isConnected()) return browser;
 
   const launchOptions = {
     headless: 'new',
@@ -47,28 +44,32 @@ async function getBrowser() {
   return browser;
 }
 
+function mouseButtonName(button) {
+  if (button === 1) return 'middle';
+  if (button === 2) return 'right';
+  return 'left';
+}
+
 wss.on('connection', async (ws) => {
-  console.log('[WS] Client connected from Surface / browser');
+  console.log('[WS] Client connected');
 
   let page = null;
   let cdp = null;
-  let isNavigating = false;
 
   try {
     const b = await getBrowser();
     page = await b.newPage();
     await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
 
-    // Enable screencast via Chrome DevTools Protocol
     cdp = await page.target().createCDPSession();
 
-    const startScreencast = async (quality = 70) => {
+    const startScreencast = async (quality = 75) => {
       try {
         await cdp.send('Page.startScreencast', {
           format: 'jpeg',
-          quality: quality,
-          maxWidth: 1280,
-          maxHeight: 720,
+          quality,
+          maxWidth: 1600,
+          maxHeight: 1000,
           everyNthFrame: 1
         });
       } catch (err) {
@@ -77,32 +78,32 @@ wss.on('connection', async (ws) => {
     };
 
     cdp.on('Page.screencastFrame', async ({ data, sessionId }) => {
-      try {
-        await cdp.send('Page.screencastFrameAck', { sessionId });
-      } catch (e) {}
-
+      try { await cdp.send('Page.screencastFrameAck', { sessionId }); } catch (e) {}
       if (ws.readyState === ws.OPEN) {
-        ws.send(JSON.stringify({ type: 'frame', data }));
+        try { ws.send(JSON.stringify({ type: 'frame', data })); } catch (e) {}
       }
     });
 
     page.on('framenavigated', async (frame) => {
       if (frame === page.mainFrame() && ws.readyState === ws.OPEN) {
         try {
-          const url = page.url();
-          const title = await page.title();
-          ws.send(JSON.stringify({ type: 'navigated', url, title }));
+          ws.send(JSON.stringify({
+            type: 'navigated',
+            url: page.url(),
+            title: await page.title()
+          }));
         } catch (e) {}
       }
     });
 
     await startScreencast(75);
 
-    // Initial default page
-    await page.goto('https://www.google.com', {
-      waitUntil: 'domcontentloaded',
-      timeout: 30000
-    });
+    try {
+      await page.goto('https://www.google.com', {
+        waitUntil: 'domcontentloaded',
+        timeout: 30000
+      });
+    } catch (e) {}
 
     ws.on('message', async (rawMsg) => {
       try {
@@ -112,6 +113,7 @@ wss.on('connection', async (ws) => {
           case 'navigate': {
             let targetUrl = msg.url ? msg.url.trim() : '';
             if (!targetUrl) return;
+
             if (!/^https?:\/\//i.test(targetUrl)) {
               if (targetUrl.includes('.') && !targetUrl.includes(' ')) {
                 targetUrl = 'https://' + targetUrl;
@@ -119,14 +121,16 @@ wss.on('connection', async (ws) => {
                 targetUrl = 'https://www.google.com/search?q=' + encodeURIComponent(targetUrl);
               }
             }
-            isNavigating = true;
+
             ws.send(JSON.stringify({ type: 'loading', loading: true, url: targetUrl }));
             try {
-              await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+              await page.goto(targetUrl, {
+                waitUntil: 'domcontentloaded',
+                timeout: 30000
+              });
             } catch (navErr) {
               console.warn('[Page] Navigation warning:', navErr.message);
             } finally {
-              isNavigating = false;
               ws.send(JSON.stringify({ type: 'loading', loading: false, url: page.url() }));
             }
             break;
@@ -134,21 +138,26 @@ wss.on('connection', async (ws) => {
 
           case 'click': {
             if (page && typeof msg.x === 'number' && typeof msg.y === 'number') {
-              await page.mouse.click(msg.x, msg.y);
+              await page.mouse.click(msg.x, msg.y, {
+                button: mouseButtonName(msg.button),
+                clickCount: msg.clickCount || 1
+              });
             }
             break;
           }
 
           case 'mousedown': {
             if (page && typeof msg.x === 'number' && typeof msg.y === 'number') {
-              await page.mouse.down();
+              await page.mouse.move(msg.x, msg.y);
+              await page.mouse.down({ button: mouseButtonName(msg.button) });
             }
             break;
           }
 
           case 'mouseup': {
             if (page && typeof msg.x === 'number' && typeof msg.y === 'number') {
-              await page.mouse.up();
+              await page.mouse.move(msg.x, msg.y);
+              await page.mouse.up({ button: mouseButtonName(msg.button) });
             }
             break;
           }
@@ -161,17 +170,17 @@ wss.on('connection', async (ws) => {
           }
 
           case 'scroll': {
-            if (page && typeof msg.deltaY === 'number') {
+            if (page) {
               await page.mouse.wheel({
-                deltaX: msg.deltaX || 0,
-                deltaY: msg.deltaY
+                deltaX: typeof msg.deltaX === 'number' ? msg.deltaX : 0,
+                deltaY: typeof msg.deltaY === 'number' ? msg.deltaY : 0
               });
             }
             break;
           }
 
           case 'type': {
-            if (page && msg.text) {
+            if (page && typeof msg.text === 'string' && msg.text.length) {
               await page.keyboard.type(msg.text);
             }
             break;
@@ -179,54 +188,35 @@ wss.on('connection', async (ws) => {
 
           case 'keypress': {
             if (page && msg.key) {
-              if (msg.key === 'Enter') {
-                await page.keyboard.press('Enter');
-              } else if (msg.key === 'Backspace') {
-                await page.keyboard.press('Backspace');
-              } else if (msg.key === 'Tab') {
-                await page.keyboard.press('Tab');
-              } else if (msg.key === 'Escape') {
-                await page.keyboard.press('Escape');
-              } else {
-                await page.keyboard.press(msg.key);
-              }
+              await page.keyboard.press(msg.key);
             }
             break;
           }
 
-          case 'back': {
-            if (page) {
-              try { await page.goBack(); } catch (e) {}
-            }
+          case 'back':
+            try { await page.goBack({ waitUntil: 'domcontentloaded', timeout: 15000 }); } catch (e) {}
             break;
-          }
 
-          case 'forward': {
-            if (page) {
-              try { await page.goForward(); } catch (e) {}
-            }
+          case 'forward':
+            try { await page.goForward({ waitUntil: 'domcontentloaded', timeout: 15000 }); } catch (e) {}
             break;
-          }
 
-          case 'reload': {
-            if (page) {
-              try { await page.reload(); } catch (e) {}
-            }
+          case 'reload':
+            try { await page.reload({ waitUntil: 'domcontentloaded', timeout: 15000 }); } catch (e) {}
             break;
-          }
 
           case 'quality': {
-            const q = parseInt(msg.quality, 10) || 70;
-            await cdp.send('Page.stopScreencast');
+            const q = Math.max(35, Math.min(92, parseInt(msg.quality, 10) || 75));
+            try { await cdp.send('Page.stopScreencast'); } catch (e) {}
             await startScreencast(q);
             break;
           }
 
           case 'resize': {
-            const w = Math.min(Math.max(parseInt(msg.width, 10) || 1280, 800), 1920);
-            const h = Math.min(Math.max(parseInt(msg.height, 10) || 720, 600), 1080);
+            const w = Math.min(Math.max(parseInt(msg.width, 10) || 1280, 800), 1600);
+            const h = Math.min(Math.max(parseInt(msg.height, 10) || 720, 500), 1000);
             await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
-            await cdp.send('Page.stopScreencast');
+            try { await cdp.send('Page.stopScreencast'); } catch (e) {}
             await startScreencast(75);
             break;
           }
@@ -239,7 +229,7 @@ wss.on('connection', async (ws) => {
   } catch (err) {
     console.error('[WS] Session initialization error:', err.message);
     if (ws.readyState === ws.OPEN) {
-      ws.send(JSON.stringify({ type: 'error', message: err.message }));
+      try { ws.send(JSON.stringify({ type: 'error', message: err.message })); } catch (e) {}
     }
   }
 
@@ -255,8 +245,7 @@ wss.on('connection', async (ws) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`====================================================`);
-  console.log(` Surface Cloud Browser Server Running on Port ${PORT} `);
-  console.log(` Open in Surface IE11: http://localhost:${PORT}        `);
-  console.log(`====================================================`);
+  console.log('====================================================');
+  console.log(' Surface Cloud Browser Server Running on Port ' + PORT + ' ');
+  console.log('====================================================');
 });
