@@ -1,0 +1,19 @@
+{
+  "name": "surface-cloud-browser",
+  "version": "1.0.0",
+  "description": "High-performance standalone cloud web browser streamer tailored for Microsoft Surface 2 and legacy devices",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "puppeteer": "^22.6.0",
+    "puppeteer-core": "^22.6.0",
+    "ws": "^8.16.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

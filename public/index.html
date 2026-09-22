@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cloud Web Browser</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Browser Navigation Bar -->
+  <div id="toolbar" class="toolbar">
+    <div class="nav-group">
+      <button id="btnBack" class="btn" title="Back">&larr;</button>
+      <button id="btnForward" class="btn" title="Forward">&rarr;</button>
+      <button id="btnReload" class="btn" title="Reload">&#8635;</button>
+    </div>
+
+    <!-- Omnibox (Address / Search bar) -->
+    <form id="navForm" class="nav-form" onsubmit="return false;">
+      <input type="text" id="urlInput" class="url-input" placeholder="Search Google or enter web address..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button type="submit" id="btnGo" class="btn btn-go">Go</button>
+    </form>
+
+    <div class="control-group">
+      <!-- Quality Selector -->
+      <select id="qualitySelect" class="quality-select" title="Stream Quality">
+        <option value="60">Eco (Fast)</option>
+        <option value="75" selected>Balanced</option>
+        <option value="90">High Res</option>
+      </select>
+
+      <!-- Keyboard Input Toggle -->
+      <button id="btnKeyboard" class="btn btn-kbd" title="Text Input">&#9000;</button>
+
+      <!-- Connection Status Badge -->
+      <div id="statusBadge" class="status-badge status-connecting" title="Connection Status"></div>
+    </div>
+  </div>
+
+  <!-- Loading Bar Indicator -->
+  <div id="loadingBar" class="loading-bar"></div>
+
+  <!-- Interactive Browser Viewport -->
+  <div id="viewportContainer" class="viewport-container">
+    <canvas id="screenCanvas" width="1280" height="720"></canvas>
+    <img id="screenImg" alt="Browser Stream" style="display:none;">
+    
+    <!-- Connection Alert Overlay -->
+    <div id="overlay" class="overlay" style="display:none;">
+      <div class="overlay-card">
+        <h3 id="overlayTitle">Connecting to Cloud Browser...</h3>
+        <p id="overlayMsg">Please wait while the remote Chromium session initializes.</p>
+        <button id="btnReconnect" class="btn btn-primary" style="display:none;">Reconnect Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Touch Keyboard Helper Drawer for Surface 2 -->
+  <div id="keyboardDrawer" class="keyboard-drawer" style="display:none;">
+    <input type="text" id="typeInput" class="type-input" placeholder="Type here and press Send to send text to webpage...">
+    <button id="btnSendText" class="btn btn-primary">Send</button>
+    <button id="btnSendEnter" class="btn">Enter</button>
+    <button id="btnSendBack" class="btn">Backspace</button>
+    <button id="btnCloseKbd" class="btn btn-close">&times;</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
